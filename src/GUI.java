@@ -83,7 +83,7 @@ public class GUI implements ActionListener {
         submit.addActionListener(this);
         submit.setActionCommand("Submit");
         submit.setPreferredSize(new Dimension(100, 50));
-        submit.setBounds(330, 0, 50, 50);
+        submit.setBounds(330, 0, 100, 50);
         container.add(submit, 1, 0);
 
 
@@ -143,6 +143,18 @@ public class GUI implements ActionListener {
 
     }
 
+    // returns the current player node for testing
+    public Node getCurrPlayer() {
+        return currPlayer;
+    }
+
+    // returns the potsize for testing
+    public int getPotsize() {
+        return potsize;
+    }
+
+    // focus a player on the gui
+    // e.g. load Player 1's name, balance, and cards
     public void focusPlayer(Node node) {
         if (firstPlayer == null) {
             firstPlayer = node;
@@ -154,11 +166,13 @@ public class GUI implements ActionListener {
         displayCards(p);
     }
 
+    // add a player's bet to the pot
     public void addPot(int potsize) {
         this.potsize += potsize;
         pot.setText("Pot: $" + this.potsize);
     }
 
+    // display a player's card
     public void displayCards(Player p) {
         ArrayList<Card> c = p.getCards();
         for (Card card : c) {
@@ -168,7 +182,7 @@ public class GUI implements ActionListener {
 
             double scale = 0.15;
 
-            // Create a new image of the proper size
+            // scale a new image of the correct size
             int w2 = (int) (w * scale);
             int h2 = (int) (h * scale);
             BufferedImage CARD_IMAGE = new BufferedImage(w2, h2, BufferedImage.TYPE_INT_ARGB);
@@ -188,7 +202,9 @@ public class GUI implements ActionListener {
 
     }
 
+    // switch to the next active player (currently in the hand)
     public void switchPlayer() {
+
         cards.removeAll();
 
         if (notInPot.size() == 3) {
@@ -210,10 +226,12 @@ public class GUI implements ActionListener {
 
     }
 
+    // change the balance text for a player
     public void setBalance(Player p) {
         balance.setText("Balance: $" + p.getChips());
     }
 
+    // facilitate "mucking" certain cards and draw new ones for the player
     public void swapCards(String s) {
         for (int i = s.length() - 1; i >= 0; i--) {
             currPlayer.getPlayer().removeCard(Integer.parseInt(s.substring(i, i + 1)));
@@ -223,27 +241,27 @@ public class GUI implements ActionListener {
         }
     }
 
+    // get rid of your cards and remove the current player from the hand
     public void fold() {
         notInPot.add(currPlayer);
     }
 
+    // match the highest current bet
     public void call() {
-        System.out.println("Current Bet: " + currentBet);
-        System.out.println(currPlayer.player.getName() + " " + currPlayer.player.potCommitment);
         addPot(currentBet - currPlayer.player.potCommitment);
         currPlayer.player.bet(currentBet - currPlayer.player.potCommitment);
 
     }
 
+    // raise the highest bet by 10
     public void bet() {
         firstPlayer = currPlayer;
         currentBet += bet;
         currPlayer.player.bet(currentBet);
         addPot(currentBet);
-        System.out.println("Current Bet: " + currentBet);
-        System.out.println(currPlayer.player.getName() + " " + currPlayer.player.potCommitment);
     }
 
+    // faciliate "showdown" but only after action has been folded all the way
     public void onePlayerShowdown() {
         while (notInPot.contains(currPlayer)) {
             currPlayer = currPlayer.next;
@@ -261,6 +279,7 @@ public class GUI implements ActionListener {
 
     }
 
+    // showdown between two players where the higher ranking hand will win all of the chips
     public void showdown() {
         Node winner = currPlayer;
         int winningHand = winner.player.getHand().getCardHand();
@@ -294,12 +313,14 @@ public class GUI implements ActionListener {
 
     }
 
+    // start a new hand
     public void reset() {
         firstPlayer = players.start;
         potsize = 0;
         notInPot.clear();
         phase = 1;
         currentBet = 0;
+        cards.removeAll();
 
 
         int p = 0;
@@ -324,6 +345,10 @@ public class GUI implements ActionListener {
         focusPlayer(players.start);
         addPot(p);
     }
+
+    /* action listeners for the buttons
+    call each command for the corresponding buttons
+     */
 
     public void actionPerformed(ActionEvent e) {
         if (phase == 1 || phase == 3) {
@@ -374,9 +399,6 @@ public class GUI implements ActionListener {
         deck.initializeDeck();
 
         new GUI(deck, tempPlayers, players);
-
-
-//        while (players.size() > 1) {
 
 
     }
