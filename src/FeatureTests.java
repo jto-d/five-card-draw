@@ -50,6 +50,7 @@ public class FeatureTests {
         Card c = new Card(6, 'c');
         System.out.println(c.getRank());
         System.out.println(c.getSuit());
+        System.out.println();
 
 
         // Gets the first 4 cards of an unshuffled deck
@@ -60,6 +61,7 @@ public class FeatureTests {
         d.initializeDeck();
         for (int i = 0; i < 4; i++)
             System.out.print(d.getCard() + " ");
+        System.out.println();
         System.out.println();
 
         // Gets the first ten cards of a shuffled deck 5 times
@@ -72,6 +74,7 @@ public class FeatureTests {
                 System.out.print(d.getCard() + " ");
             System.out.println();
         }
+        System.out.println();
 
         /* Ranks the hand, outputting an int for the hand strength
         followed by a space then the "rank." A high card is hand
@@ -137,6 +140,64 @@ public class FeatureTests {
             gui.call();
             gui.switchPlayer();
         }
+        System.out.println();
+
+        gui.reset();
+
+        // Show players switch when "bet" command given and the pot increments by $10 after each call
+        // (simulates the bet/call button press)
+
+        /* Expected Output:
+            "Player 1 -- Pot: 30"
+            "Player 2 -- Pot: 40"
+            "Player 3 -- Pot: 50"
+            "Player 4 -- Pot: 60"
+         */
+        gui.bet();
+        System.out.println(gui.getCurrPlayer().player.getName() + " -- Pot: " + gui.getPotsize());
+        gui.switchPlayer();
+        do {
+            gui.call();
+            System.out.println(gui.getCurrPlayer().player.getName() + " -- Pot: " + gui.getPotsize());
+            gui.switchPlayer();
+        } while (gui.getPhase() != 2);
+
+        System.out.println();
+        gui.reset();
+
+        // Show player wins when 3 folds
+        //
+
+        /* Expected Output:
+            "Player 4 won the pot"
+            "Player 1 975"
+            "Player 2 975"
+            "Player 3 975"
+            "Player 4 995"
+         */
+        gui.fold();
+        gui.switchPlayer();
+        gui.fold();
+        gui.switchPlayer();
+        gui.fold();
+        gui.switchPlayer();
+
+        gui.reset();
+        System.out.println();
+
+        // Show amount of players in the hand after two folds
+        // Expected Output:
+        // "2"
+
+        gui.bet();
+        gui.switchPlayer();
+        gui.fold();
+        gui.fold();
+        gui.call();
+
+        System.out.println(gui.getNotInPot().size() + "\n");
+
+        gui.reset();
 
 
     }

@@ -143,6 +143,15 @@ public class GUI implements ActionListener {
 
     }
 
+    public ArrayList<Node> getNotInPot() {
+        return notInPot;
+    }
+
+    // returns the current phase for testing
+    public int getPhase() {
+        return phase;
+    }
+
     // returns the current player node for testing
     public Node getCurrPlayer() {
         return currPlayer;
@@ -315,12 +324,15 @@ public class GUI implements ActionListener {
 
     // start a new hand
     public void reset() {
+
         firstPlayer = players.start;
         potsize = 0;
-        notInPot.clear();
+        if (notInPot.size() > 0)
+            notInPot.clear();
         phase = 1;
         currentBet = 0;
-        cards.removeAll();
+        if (cards.getComponents().length != 0)
+            cards.removeAll();
 
 
         int p = 0;
@@ -328,7 +340,8 @@ public class GUI implements ActionListener {
 
         // shuffle deck
         for (Player player : listPlayers) {
-            player.clearCards();
+            if (player.getCards().size() > 0)
+                player.clearCards();
             player.bet(ANTE);
             player.potCommitment = 0;
             p += ANTE;
