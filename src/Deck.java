@@ -24,7 +24,7 @@ public class Deck {
         char[] suits = {'c', 'h', 'd', 's'};
         for (char suit : suits) {
             for (int rank = 2; rank < 15; rank++) {
-                String filepath = "src/cardImages/" + rank + suit + ".png";
+                String filepath = "cardImages/" + rank + suit + ".png";
                 Card c = new Card(rank, suit, ImageIO.read(new File(filepath)));
                 deck[index] = c;
                 index++;
