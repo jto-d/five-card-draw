@@ -99,7 +99,7 @@ public class GUI implements ActionListener {
         }
 
         // create and add background image
-        BufferedImage TABLE_IMAGE = ImageIO.read(new File("src/table.jpeg"));
+        BufferedImage TABLE_IMAGE = ImageIO.read(new File("table.jpeg"));
         JLabel tableImage = new JLabel(new ImageIcon(TABLE_IMAGE));
         tableImage.setBounds(0, 0, 612, 408);
         container.add(tableImage, 0, 0);
