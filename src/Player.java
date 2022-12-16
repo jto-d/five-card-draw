@@ -5,11 +5,13 @@ public class Player {
     private String name;
     private int chips;
     private ArrayList<Card> cards;
+    public int potCommitment;
 
     public Player(String name, int chips) {
         this.chips = chips;
         this.name = name;
         cards = new ArrayList<>();
+        potCommitment = 0;
     }
 
     public int getChips() {
@@ -20,9 +22,9 @@ public class Player {
         return name;
     }
 
-    public int bet(int amount) {
+    public void bet(int amount) {
+        potCommitment += amount;
         chips -= amount;
-        return amount;
     }
 
     public void drawCard(Card c) {
@@ -41,11 +43,15 @@ public class Player {
         return cards;
     }
 
+    public void winPot(int winnings) {
+        chips += winnings;
+    }
 
-    public String getHand() {
+
+    public Hand getHand() {
         Card[] c = new Card[5];
         Hand h = new Hand(cards.toArray(c));
-        return h.getRank();
+        return h;
     }
 
     public static void main(String[] args) {

@@ -10,17 +10,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/* Implements the GUI using Java Swing and acts as the control
+for flow of the program
+ */
 public class GUI implements ActionListener {
 
     private Node currPlayer;
     private Deck deck;
     private ArrayList<Node> notInPot;
     private Node firstPlayer;
+    private ArrayList<Player> listPlayers;
+    private Players players;
 
 
     private int potsize;
     private int bet;
     private int currentBet;
+    private int phase;
 
     private JLabel balance;
     private JLabel player;
@@ -35,11 +41,15 @@ public class GUI implements ActionListener {
     private JPanel cards;
     private JPanel buttons;
 
-    public GUI(Deck deck) throws IOException {
+    // creates a gui using the deck, list of players, and circular linked list
+    public GUI(Deck deck, ArrayList<Player> listPlayers, Players players) throws IOException {
 
         potsize = 0;
         bet = 10;
         currentBet = 0;
+        phase = 1;
+        this.listPlayers = listPlayers;
+        this.players = players;
 
         notInPot = new ArrayList<>();
 
@@ -65,7 +75,7 @@ public class GUI implements ActionListener {
 
         // text field for swap cards
         swap = new JTextField();
-        swap.setBounds(275, 0, 100, 50);
+        swap.setBounds(275, 0, 50, 50);
         container.add(swap, 1, 0);
 
         // submit button for swap cards
@@ -73,6 +83,8 @@ public class GUI implements ActionListener {
         submit.addActionListener(this);
         submit.setActionCommand("Submit");
         submit.setPreferredSize(new Dimension(100, 50));
+        submit.setBounds(330, 0, 50, 50);
+        container.add(submit, 1, 0);
 
 
         // add buttons for "poker moves"
@@ -86,6 +98,7 @@ public class GUI implements ActionListener {
             buttons.add(button);
         }
 
+        // create and add background image
         BufferedImage TABLE_IMAGE = ImageIO.read(new File("src/table.jpeg"));
         JLabel tableImage = new JLabel(new ImageIcon(TABLE_IMAGE));
         tableImage.setBounds(0, 0, 612, 408);
@@ -126,6 +139,7 @@ public class GUI implements ActionListener {
         frame.add(container);
 //        frame.pack();
         frame.setVisible(true);
+        reset();
 
     }
 
@@ -177,15 +191,22 @@ public class GUI implements ActionListener {
     public void switchPlayer() {
         cards.removeAll();
 
-        if (currPlayer.next == firstPlayer) {
-            System.out.println("Next Phase");
+        if (notInPot.size() == 3) {
+            onePlayerShowdown();
+        } else {
+
+            if (currPlayer.next == firstPlayer) {
+                phase += 1;
+            }
+
+            while (notInPot.contains(currPlayer.next)) {
+                currPlayer = currPlayer.next;
+            }
+
+
+            focusPlayer(currPlayer.next);
         }
 
-        while (notInPot.contains(currPlayer.next)) {
-            currPlayer = currPlayer.next;
-        }
-
-        focusPlayer(currPlayer.next);
 
     }
 
@@ -194,7 +215,7 @@ public class GUI implements ActionListener {
     }
 
     public void swapCards(String s) {
-        for (int i = 0; i < s.length(); i++) {
+        for (int i = s.length() - 1; i >= 0; i--) {
             currPlayer.getPlayer().removeCard(Integer.parseInt(s.substring(i, i + 1)));
         }
         for (int i = 0; i < s.length(); i++) {
@@ -207,34 +228,155 @@ public class GUI implements ActionListener {
     }
 
     public void call() {
-        currPlayer.player.bet(currentBet);
-        addPot(currentBet);
+        System.out.println("Current Bet: " + currentBet);
+        System.out.println(currPlayer.player.getName() + " " + currPlayer.player.potCommitment);
+        addPot(currentBet - currPlayer.player.potCommitment);
+        currPlayer.player.bet(currentBet - currPlayer.player.potCommitment);
+
     }
 
     public void bet() {
         firstPlayer = currPlayer;
-        currentBet = bet;
-        currPlayer.player.bet(bet);
-        addPot(bet);
+        currentBet += bet;
+        currPlayer.player.bet(currentBet);
+        addPot(currentBet);
+        System.out.println("Current Bet: " + currentBet);
+        System.out.println(currPlayer.player.getName() + " " + currPlayer.player.potCommitment);
+    }
+
+    public void onePlayerShowdown() {
+        while (notInPot.contains(currPlayer)) {
+            currPlayer = currPlayer.next;
+        }
+        currPlayer.player.winPot(potsize);
+        System.out.println(currPlayer.player.getName() + " won the pot");
+        currPlayer = players.start;
+
+        System.out.println(currPlayer.player.getName() + " " + currPlayer.player.getChips());
+        System.out.println(currPlayer.next.player.getName() + " " + currPlayer.next.player.getChips());
+        System.out.println(currPlayer.next.next.player.getName() + " " + currPlayer.next.next.player.getChips());
+        System.out.println(currPlayer.next.next.next.player.getName() + " " +
+                currPlayer.next.next.next.player.getChips());
+        reset();
+
+    }
+
+    public void showdown() {
+        Node winner = currPlayer;
+        int winningHand = winner.player.getHand().getCardHand();
+        int winningRank = winner.player.getHand().getRankHand();
+
+        currPlayer = currPlayer.next;
+
+        do {
+            if (!notInPot.contains(currPlayer)) {
+                int currHand = currPlayer.player.getHand().getCardHand();
+                int currRank = currPlayer.player.getHand().getRankHand();
+                if (currHand > winningHand ||
+                        (currHand == winningHand && currRank > winningRank)) {
+                    winner = currPlayer;
+                    winningHand = currHand;
+                    winningRank = currRank;
+                }
+            }
+            currPlayer = currPlayer.next;
+        } while (currPlayer.next != firstPlayer);
+
+        winner.player.winPot(potsize);
+        System.out.println(winner.player.getName() + " won the pot");
+        currPlayer = players.start;
+        System.out.println(currPlayer.player.getName() + " " + currPlayer.player.getChips());
+        System.out.println(currPlayer.next.player.getName() + " " + currPlayer.next.player.getChips());
+        System.out.println(currPlayer.next.next.player.getName() + " " + currPlayer.next.next.player.getChips());
+        System.out.println(currPlayer.next.next.next.player.getName() + " " +
+                currPlayer.next.next.next.player.getChips());
+        reset();
+
+    }
+
+    public void reset() {
+        firstPlayer = players.start;
+        potsize = 0;
+        notInPot.clear();
+        phase = 1;
+        currentBet = 0;
+
+
+        int p = 0;
+        int ANTE = 5;
+
+        // shuffle deck
+        for (Player player : listPlayers) {
+            player.clearCards();
+            player.bet(ANTE);
+            player.potCommitment = 0;
+            p += ANTE;
+        }
+        deck.shuffleDeck();
+
+        for (int i = 0; i < 5; i++) {
+            for (Player player : listPlayers) {
+                player.drawCard(deck.getCard());
+            }
+        }
+
+
+        focusPlayer(players.start);
+        addPot(p);
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getActionCommand().equals("Fold")) {
-            fold();
-            switchPlayer();
-        } else if (e.getActionCommand().equals("Check/Call")) {
-            call();
-            switchPlayer();
-        } else if (e.getActionCommand().equals("Bet/Raise")) {
-            bet();
-            switchPlayer();
-        } else if (e.getActionCommand().equals("Submit")) {
+        if (phase == 1 || phase == 3) {
+            if (e.getActionCommand().equals("Fold")) {
+                fold();
+                switchPlayer();
+            } else if (e.getActionCommand().equals("Check/Call")) {
+                call();
+                switchPlayer();
+            } else if (e.getActionCommand().equals("Bet/Raise")) {
+                bet();
+                switchPlayer();
+            }
+        } else if (e.getActionCommand().equals("Submit") && phase == 2) {
+            currentBet = 0;
             String cardsToSwap = swap.getText();
             swapCards(cardsToSwap);
+            switchPlayer();
+            for (Player player : listPlayers) {
+                player.potCommitment = 0;
+            }
+        } else if (phase == 4) {
+            showdown();
+
+
         }
     }
 
     public static void main(String[] args) throws IOException {
+        int STARTING_CHIPS = 1000;
+
+
+        // initialize players
+        int numPlayers = 4;
+
+        ArrayList<Player> tempPlayers = new ArrayList<>();
+
+
+        for (int i = 1; i <= numPlayers; i++)
+            tempPlayers.add(new Player("Player " + i, STARTING_CHIPS));
+
+        // implements a circularly linked list
+        Players players = new Players(tempPlayers);
+
+
+        // create deck
+        Deck deck = new Deck();
+        deck.initializeDeck();
+
+        new GUI(deck, tempPlayers, players);
+
+
+//        while (players.size() > 1) {
 
 
     }

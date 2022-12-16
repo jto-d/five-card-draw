@@ -2,16 +2,23 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
+
+/* creates a Deck object of the 52 cards in a standard deck of cards
+the Deck will be unshuffled until the shuffleDeck() command is ran
+ */
 public class Deck {
     private Card[] deck;
     private int topCard;
 
+    // create a deck object
     public Deck() {
         deck = new Card[52];
         topCard = -1;
     }
 
     // initialize the deck with each of the 52 cards
+    // reads each of the suits, ranks, and images and throws
+    // an exception if the filepath cannot be found
     public void initializeDeck() throws IOException {
         int index = 0;
         char[] suits = {'c', 'h', 'd', 's'};
@@ -36,15 +43,14 @@ public class Deck {
         }
     }
 
+    // get the top card of the deck and move the "topCard" pointer to the
+    // next card
     public Card getCard() {
         topCard++;
         return deck[topCard];
     }
 
-    public void burnCard() {
-        topCard++;
-    }
-
+    // print all of the cards in the deck in their current order
     public String toString() {
         String str = "";
         for (Card c : deck) {
